@@ -114,7 +114,7 @@ jobs:
         # Build the driver
         grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) vmlinux modules
+        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
 
 
     - name: Setup tmate session
