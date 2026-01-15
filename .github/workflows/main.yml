@@ -121,7 +121,7 @@ jobs:
         fi
 
     - name: Upload compiled module
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: amlwifi-module
         path: aml_drv/amlwifi.ko
