@@ -87,6 +87,9 @@ jobs:
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
         make ARCH=arm64 defconfig
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      
     - name: Prepare kernel build environment
       run: |
         if [ ! -d "android-kernel" ]; then
@@ -95,7 +98,7 @@ jobs:
         fi
         cd android-kernel
         # Prepare the kernel for module compilation
-        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- headers_prepare
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
     - name: Compile WiFi driver
       run: |
