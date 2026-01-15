@@ -100,7 +100,7 @@ jobs:
         ./scripts/config --file .config --disable CONFIG_WERROR
         # make olddefconfig
         make ARCH=arm64 CC=clang CROSS_COMPILE=aarch64-linux-gnu- headers_check
-        make ARCH=arm64 CC=clang CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
+        make ARCH=arm64 CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
       
     - name: Compile WiFi driver
@@ -113,7 +113,7 @@ jobs:
         
         # Build the driver
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
+        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
 
 
     - name: Setup tmate session
