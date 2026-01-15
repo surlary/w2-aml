@@ -86,7 +86,7 @@ jobs:
         cd android-kernel
         # Apply any necessary patches to match the exact kernel version
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
-        make ARCH=arm64 defconfig
+        make ARCH=arm64 olddefconfig
 
     - name: Prepare kernel build environment
       run: |
