@@ -79,9 +79,10 @@ jobs:
     - name: Download Android kernel source
       if: steps.cache-kernel.outputs.cache-hit != 'true'
       run: |
-        wget ${KERNEL_URL}${{ env.KERNEL_COMMIT }}.tar.gz
-        mkdir -p android-kernel
-        tar -xzf ${{ env.KERNEL_COMMIT }}.tar.gz -C android-kernel
+        # wget ${KERNEL_URL}${{ env.KERNEL_COMMIT }}.tar.gz
+        git clone --single-branch --depth 1 -b amlogic-5.4.210 https://github.com/CoreELEC/linux-amlogic.git android-kernel
+        # mkdir -p android-kernel
+        # tar -xzf ${{ env.KERNEL_COMMIT }}.tar.gz -C android-kernel
         cd android-kernel
         # Apply any necessary patches to match the exact kernel version
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
