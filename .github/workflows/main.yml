@@ -97,7 +97,7 @@ jobs:
         cd android-kernel
         # Prepare the kernel for module compilation
         ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
-        ./scripts/config --file .config --disable CONFIG_WERROR
+        ./scripts/config --file .config --disable CONFIG_DEBUG_INFO_NONE
         # make olddefconfig
         make ARCH=arm64 CC=clang CROSS_COMPILE=aarch64-linux-gnu- headers_check
         make ARCH=arm64 CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
@@ -114,7 +114,7 @@ jobs:
         # Build the driver
         grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error -Wno-unknown-warning-option" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
+        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error -Wno-unknown-warning-option -Oz" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
 
 
     - name: Setup tmate session
