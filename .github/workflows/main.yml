@@ -1,0 +1,127 @@
+name: Cross Compile Amlogic WiFi Driver
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_version:
+        description: 'Target Kernel Version'
+        required: true
+        default: '5.4.210-android12-9-g092e4cd48fbd-dirty'
+      kernel_commit:
+        description: 'Android Kernel Commit'
+        required: true
+        default: '1f0546b124258e32ef0cd4838cb201de58e83ceb'
+      kernel_url:
+        description: 'Android Kernel Source URL'
+        required: true
+        default: 'https://android.googlesource.com/kernel/common/+archive/'
+      clang_version:
+        description: 'Clang Version'
+        required: true
+        default: '11.0.1'
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up environment variables
+      run: |
+        echo "KERNEL_VERSION=${{ github.event.inputs.kernel_version }}" >> $GITHUB_ENV
+        echo "KERNEL_COMMIT=${{ github.event.inputs.kernel_commit }}" >> $GITHUB_ENV
+        echo "KERNEL_URL=${{ github.event.inputs.kernel_url }}" >> $GITHUB_ENV
+        echo "CLANG_VERSION=${{ github.event.inputs.clang_version }}" >> $GITHUB_ENV
+
+    - name: Cache Clang compiler
+      id: cache-clang
+      uses: actions/cache@v3
+      with:
+        path: clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10
+        key: clang-${{ github.event.inputs.clang_version }}-ubuntu-20.10
+
+    - name: Download and extract Clang
+      if: steps.cache-clang.outputs.cache-hit != 'true'
+      run: |
+        wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${{ env.CLANG_VERSION }}/clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10.tar.xz
+        tar -xf clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10.tar.xz
+        echo "CLANG_PATH=${PWD}/clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10/bin" >> $GITHUB_ENV
+        echo "${PWD}/clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10/bin" >> $GITHUB_PATH
+
+    - name: Set CLANG_PATH for cache hit
+      if: steps.cache-clang.outputs.cache-hit == 'true'
+      run: |
+        echo "CLANG_PATH=${PWD}/clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10/bin" >> $GITHUB_ENV
+        echo "${PWD}/clang+llvm-${{ env.CLANG_VERSION }}-x86_64-linux-gnu-ubuntu-20.10/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libelf-dev libssl-dev bc bison flex libncurses5-dev
+
+    - name: Set up cross compilation tools
+      run: |
+        # Install cross compilation tools for ARM64
+        sudo apt-get install -y gcc-aarch64-linux-gnu
+
+        # Verify clang installation
+        ${CLANG_PATH}/clang --version
+
+    - name: Cache Android kernel source
+      id: cache-kernel
+      uses: actions/cache@v3
+      with:
+        path: android-kernel
+        key: android-kernel-${{ github.event.inputs.kernel_commit }}-${{ github.event.inputs.kernel_url }}
+
+    - name: Download Android kernel source
+      if: steps.cache-kernel.outputs.cache-hit != 'true'
+      run: |
+        wget ${KERNEL_URL}${{ env.KERNEL_COMMIT }}.tar.gz
+        mkdir -p android-kernel
+        tar -xzf ${{ env.KERNEL_COMMIT }}.tar.gz -C android-kernel
+        cd android-kernel
+        # Apply any necessary patches to match the exact kernel version
+        echo "Kernel version: ${{ env.KERNEL_VERSION }}"
+        make ARCH=arm64 defconfig
+
+    - name: Prepare kernel build environment
+      run: |
+        if [ ! -d "android-kernel" ]; then
+          echo "Error: android-kernel directory not found"
+          exit 1
+        fi
+        cd android-kernel
+        # Prepare the kernel for module compilation
+        make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- headers_prepare
+
+    - name: Compile WiFi driver
+      run: |
+        # Set environment variables for cross compilation
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
+        export CC=${CLANG_PATH}/clang
+        export KERNEL_SRC=${PWD}/android-kernel
+        
+        # Build the driver
+        make -C aml_drv KERNEL_SRC=${KERNEL_SRC} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc)
+
+    - name: Verify compilation
+      run: |
+        # Check if the compiled module exists
+        if [ -f "aml_drv/amlwifi.ko" ]; then
+          echo "Module compiled successfully"
+          file aml_drv/amlwifi.ko
+          ls -la aml_drv/amlwifi.ko
+        else
+          echo "Module compilation failed"
+          exit 1
+        fi
+
+    - name: Upload compiled module
+      uses: actions/upload-artifact@v3
+      with:
+        name: amlwifi-module
+        path: aml_drv/amlwifi.ko
