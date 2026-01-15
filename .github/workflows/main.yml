@@ -112,8 +112,9 @@ jobs:
         export KERNELDIR=${PWD}/android-kernel
         
         # Build the driver
-        echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
+        grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
+        echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
+        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) vmlinux modules
 
 
     - name: Setup tmate session
@@ -136,4 +137,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: amlwifi-module
-        path: aml_drv/amlwifi.ko
+        path: |
+          common/aml_wifi_rf.txt
+          common/*.bin
+          aml_drv/fullmac/*.ko
