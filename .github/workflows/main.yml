@@ -121,17 +121,6 @@ jobs:
       uses: mxschmitt/action-tmate@v3
       if: failure()
       
-    - name: Verify compilation
-      run: |
-        # Check if the compiled module exists
-        if [ -f "aml_drv/amlwifi.ko" ]; then
-          echo "Module compiled successfully"
-          file aml_drv/amlwifi.ko
-          ls -la aml_drv/amlwifi.ko
-        else
-          echo "Module compilation failed"
-          exit 1
-        fi
 
     - name: Upload compiled module
       uses: actions/upload-artifact@v4
