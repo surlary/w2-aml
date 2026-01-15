@@ -97,6 +97,10 @@ jobs:
         # Prepare the kernel for module compilation
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      
     - name: Compile WiFi driver
       run: |
         # Set environment variables for cross compilation
@@ -108,10 +112,6 @@ jobs:
         # Build the driver
         echo make -C aml_drv KERNEL_SRC=${KERNEL_SRC} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc)
         make -C aml_drv KERNEL_SRC=${KERNEL_SRC} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc)
-
-
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
 
       
     - name: Verify compilation
