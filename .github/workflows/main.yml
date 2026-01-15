@@ -87,9 +87,6 @@ jobs:
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
         make ARCH=arm64 defconfig
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-      
     - name: Prepare kernel build environment
       run: |
         if [ ! -d "android-kernel" ]; then
@@ -109,8 +106,14 @@ jobs:
         export KERNEL_SRC=${PWD}/android-kernel
         
         # Build the driver
+        echo make -C aml_drv KERNEL_SRC=${KERNEL_SRC} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc)
         make -C aml_drv KERNEL_SRC=${KERNEL_SRC} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc)
 
+
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
+
+      
     - name: Verify compilation
       run: |
         # Check if the compiled module exists
