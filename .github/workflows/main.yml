@@ -95,13 +95,11 @@ jobs:
         fi
         cd android-kernel
         # Prepare the kernel for module compilation
-        ./scripts/config --disable CONFIG_STACKPROTECTOR_PER_TASK
+        ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
+        make olddefconfig
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- headers_check
         make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
-
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
       
     - name: Compile WiFi driver
       run: |
@@ -115,6 +113,9 @@ jobs:
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
         make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
 
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
       
     - name: Verify compilation
       run: |
