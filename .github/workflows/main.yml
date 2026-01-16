@@ -64,7 +64,7 @@ jobs:
     - name: Set up cross compilation tools
       run: |
         # Install cross compilation tools for ARM64
-        # sudo apt-get install -y gcc-aarch64-linux-gnu
+        sudo apt-get install -y gcc-aarch64-linux-gnu
 
         # Verify clang installation
         ${CLANG_PATH}/clang --version
