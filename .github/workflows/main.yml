@@ -64,7 +64,7 @@ jobs:
     - name: Set up cross compilation tools
       run: |
         # Install cross compilation tools for ARM64
-        sudo apt-get install -y gcc-aarch64-linux-gnu
+        # sudo apt-get install -y gcc-aarch64-linux-gnu
 
         # Verify clang installation
         ${CLANG_PATH}/clang --version
@@ -87,7 +87,6 @@ jobs:
         # Apply any necessary patches to match the exact kernel version
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
         make ARCH=arm64 olddefconfig
-        echo 'CONFIG_CC_VERSION_TEXT="Android (6443078 based on r383902) clang version 11.0.1 (https://android.googlesource.com/toolchain/llvm-project b397f81060ce6d701042b782172ed13bee898b79)"'> Module.symvers
 
     - name: Prepare kernel build environment
       run: |
@@ -115,9 +114,13 @@ jobs:
         # Build the driver
         grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} LLVM=1 KCFLAGS="-Wno-error -Wno-unknown-warning-option -O2" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
+        make -C aml_drv KERNELRELEASE='5.4.210-android12-9-g092e4cd48fbd-dirty' KERNELDIR=${KERNELDIR} ARCH=${ARCH} LLVM=1 KCFLAGS="-Wno-error -Wno-unknown-warning-option -O2" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
         ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2_comm.ko
         ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2.ko
+        mkdir -p vendor/lib/firmware/aml vendor/lib/modules/aml/
+        mv aml_drv/fullmac/*.ko vendor/lib/modules/
+        mv common/*.bin vendor/lib/firmware/aml/
+        mv common/*.txt vendor/lib/modules/aml/
 
 
     - name: Setup tmate session
@@ -130,6 +133,4 @@ jobs:
       with:
         name: amlwifi-module
         path: |
-          common/aml_wifi_rf.txt
-          common/*.bin
-          aml_drv/fullmac/*.ko
+          vendor
