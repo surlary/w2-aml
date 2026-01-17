@@ -64,7 +64,7 @@ jobs:
     - name: Set up cross compilation tools
       run: |
         # Install cross compilation tools for ARM64
-        sudo apt-get install -y gcc-arm-linux-gnu
+        sudo apt-get install -y gcc-arm-linux-gnueabi
 
         # Verify clang installation
         ${CLANG_PATH}/clang --version
@@ -86,7 +86,7 @@ jobs:
         cd android-kernel
         # Apply any necessary patches to match the exact kernel version
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
-        make ARCH=arm64 olddefconfig
+        make ARCH=arm olddefconfig
 
     - name: Prepare kernel build environment
       run: |
@@ -99,14 +99,14 @@ jobs:
         ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
         ./scripts/config --file .config --disable CONFIG_DEBUG_INFO_NONE
         # make olddefconfig
-        make ARCH=arm64 CC=clang CROSS_COMPILE=arm-linux-gnu- headers_check
-        make ARCH=arm64 CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=arm-linux-gnu- modules_prepare
+        make ARCH=arm CC=clang CROSS_COMPILE=arm-linux-gnu- headers_check
+        make ARCH=arm CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=arm-linux-gnu- modules_prepare
 
       
     - name: Compile WiFi driver
       run: |
         # Set environment variables for cross compilation
-        export ARCH=arm64
+        export ARCH=arm
         export CROSS_COMPILE=arm-linux-gnu-
         export CC=${CLANG_PATH}/clang
         export KERNELDIR=${PWD}/android-kernel
