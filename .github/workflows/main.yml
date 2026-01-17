@@ -115,8 +115,8 @@ jobs:
         grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
         make -C aml_drv KERNELRELEASE='5.4.210-android12-9-g092e4cd48fbd-dirty' KERNELDIR=${KERNELDIR} ARCH=${ARCH} LLVM=1 KCFLAGS="-Wno-error -Wno-unknown-warning-option -O2" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2_comm.ko
-        ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2.ko
+        # ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2_comm.ko
+        # ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2.ko
         mkdir -p vendor/lib/firmware/aml vendor/lib/modules/aml/
         mv aml_drv/fullmac/*.ko vendor/lib/modules/
         mv common/*.bin vendor/lib/firmware/aml/
