@@ -99,15 +99,15 @@ jobs:
         ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
         ./scripts/config --file .config --disable CONFIG_DEBUG_INFO_NONE
         # make olddefconfig
-        make ARCH=arm CC=clang CROSS_COMPILE=arm-linux-gnu- headers_check
-        make ARCH=arm CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=arm-linux-gnu- modules_prepare
+        make ARCH=arm CC=clang CROSS_COMPILE=arm-linux-gnueabi- headers_check
+        make ARCH=arm CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=arm-linux-gnueabi- modules_prepare
 
       
     - name: Compile WiFi driver
       run: |
         # Set environment variables for cross compilation
         export ARCH=arm
-        export CROSS_COMPILE=arm-linux-gnu-
+        export CROSS_COMPILE=arm-linux-gnueabi-
         export CC=${CLANG_PATH}/clang
         export KERNELDIR=${PWD}/android-kernel
         
