@@ -64,7 +64,7 @@ jobs:
     - name: Set up cross compilation tools
       run: |
         # Install cross compilation tools for ARM64
-        sudo apt-get install -y gcc-arm-linux-gnueabi
+        sudo apt-get install -y gcc-aarch64-linux-gnu
 
         # Verify clang installation
         ${CLANG_PATH}/clang --version
@@ -86,7 +86,7 @@ jobs:
         cd android-kernel
         # Apply any necessary patches to match the exact kernel version
         echo "Kernel version: ${{ env.KERNEL_VERSION }}"
-        make ARCH=arm olddefconfig
+        make ARCH=arm64 olddefconfig
 
     - name: Prepare kernel build environment
       run: |
@@ -99,19 +99,17 @@ jobs:
         ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
         ./scripts/config --file .config --disable CONFIG_DEBUG_INFO_NONE
         # make olddefconfig
-        make ARCH=arm CC=clang CROSS_COMPILE=arm-linux-gnueabihf- headers_check
-        make ARCH=arm CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=arm-linux-gnueabihf- modules_prepare
+        make ARCH=arm64 CC=clang CROSS_COMPILE=aarch64-linux-gnu- headers_check
+        make ARCH=arm64 CC=clang KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-gnu- modules_prepare
 
       
     - name: Compile WiFi driver
       run: |
         # Set environment variables for cross compilation
-        export ARCH=arm
-        export CROSS_COMPILE=arm-linux-gnueabihf-
+        export ARCH=arm64
+        export CROSS_COMPILE=aarch64-linux-gnu-
         export CC=${CLANG_PATH}/clang
         export KERNELDIR=${PWD}/android-kernel
-        export CLANG_TRIPLE=armv7a-linux-androideabi-
-        export TARGET_TRIPLE=armv7a-linux-androideabi
         
         # Build the driver
         grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
