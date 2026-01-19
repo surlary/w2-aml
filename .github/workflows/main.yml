@@ -99,8 +99,8 @@ jobs:
         ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
         ./scripts/config --file .config --disable CONFIG_DEBUG_INFO_NONE
         # make olddefconfig
-        make ARCH=arm64 CC=clang LLVM=1 V=s CROSS_COMPILE=aarch64-linux-android- headers_check
-        make ARCH=arm64 CC=clang LLVM=1 V=s KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-android- modules_prepare
+        make ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-android- headers_check
+        make ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-android- modules_prepare
 
       
     - name: Compile WiFi driver
@@ -114,7 +114,7 @@ jobs:
         # Build the driver
         grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
         echo make -C aml_drv KERNELDIR=${KERNELDIR} ARCH=${ARCH} KCFLAGS="-Wno-error" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
-        make -C aml_drv KERNELRELEASE='5.4.210-android12-9-g092e4cd48fbd-dirty' KERNELDIR=${KERNELDIR} ARCH=${ARCH} LLVM=1 LDFLAGS_MODULE="--strip-debug" KCFLAGS="-Wno-error -Wno-unknown-warning-option -O2" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
+        make -C aml_drv KERNELRELEASE='5.4.210-android12-9-g092e4cd48fbd-dirty' KERNELDIR=${KERNELDIR} ARCH=${ARCH} LLVM=1 LLVM_IAS=1 LDFLAGS_MODULE="--strip-debug" KCFLAGS="-Wno-error -Wno-unknown-warning-option -O2" CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} -j$(nproc) modules
         # ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2_comm.ko
         # ${CLANG_PATH}/llvm-strip --strip-unneeded aml_drv/fullmac/w2.ko
         mkdir -p vendor/lib/firmware/aml vendor/lib/modules/aml/
