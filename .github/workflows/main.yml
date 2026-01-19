@@ -99,8 +99,8 @@ jobs:
         ./scripts/config --file .config --disable CONFIG_STACKPROTECTOR_PER_TASK
         ./scripts/config --file .config --disable CONFIG_DEBUG_INFO_NONE
         # make olddefconfig
-        make ARCH=arm64 CC=clang LLVM=1 CROSS_COMPILE=aarch64-linux-android- headers_check
-        make ARCH=arm64 CC=clang LLVM=1 KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-android- modules_prepare
+        make ARCH=arm64 CC=clang LLVM=1 V=s CROSS_COMPILE=aarch64-linux-android- headers_check
+        make ARCH=arm64 CC=clang LLVM=1 V=s KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" CROSS_COMPILE=aarch64-linux-android- modules_prepare
 
       
     - name: Compile WiFi driver
