@@ -103,7 +103,7 @@ jobs:
       - name: Prepare Kernel Headers
         working-directory: kernel_src
         run: |
-          make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} modules_prepare
+          make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" modules_prepare
 
       - name: Build Driver
         run: |
