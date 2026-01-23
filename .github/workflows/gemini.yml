@@ -107,7 +107,7 @@ jobs:
 
       - name: Build Driver
         run: |
-          source defconfig
+          # source defconfig
           make \
             -C aml_drv \
             ARCH=${{ env.ARCH }} \
