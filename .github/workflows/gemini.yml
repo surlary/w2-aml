@@ -124,12 +124,12 @@ jobs:
 
       - name: Strip Debug Symbols
         run: |
-          aarch64-linux-gnu-strip --strip-unneeded *.ko
-          ls -lh *.ko
+          aarch64-linux-gnu-strip --strip-unneeded aml_drv/fullmac/*.ko
+          
           mkdir -p vendor/lib/firmware/aml vendor/lib/modules/aml/
           mv aml_drv/fullmac/*.ko vendor/lib/modules/
-          # mv common/*.bin vendor/lib/firmware/aml/
-          # mv common/*.txt vendor/lib/modules/aml/
+          mv common/*.bin vendor/lib/firmware/aml/
+          mv common/*.txt vendor/lib/modules/aml/
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
