@@ -107,7 +107,9 @@ jobs:
 
       - name: Build Driver
         run: |
+          source defconfig
           make \
+            -C aml_drv \
             ARCH=${{ env.ARCH }} \
             CC=clang \
             CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
