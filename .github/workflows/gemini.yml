@@ -117,7 +117,7 @@ jobs:
             KDIR=$GITHUB_WORKSPACE/kernel_src/out \
             KERNELDIR=$GITHUB_WORKSPACE/kernel_src/out \
             M=$PWD/aml_drv \
-            KCFLAGS="-Wno-error -Wno-unknown-warning-option -Wmisleading-indentation" \
+            KCFLAGS="-Wno-error -Wno-unknown-warning-option -Wmisleading-indentation -Wimplicit-function-declaration" \
             -j$(nproc) \
             modules
 
