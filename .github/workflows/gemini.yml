@@ -1,0 +1,138 @@
+name: Build Amlogic Android TV Driver (Cached)
+
+on:
+  workflow_dispatch: # 手动触发
+
+jobs:
+  build:
+    name: Build Kernel Module
+    runs-on: ubuntu-latest
+
+    env:
+      KERNEL_REPO_URL: "https://github.com/CoreELEC/linux-amlogic"
+      KERNEL_BRANCH: "amlogic-5.4.210"
+      # LLVM 下载地址
+      LLVM_URL: "https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.1/clang+llvm-11.0.1-x86_64-linux-gnu-ubuntu-20.10.tar.xz"
+      # 定义缓存 Key 的一部分，当想强制刷新缓存时修改此版本号
+      CACHE_VERSION: "v1"
+      
+      ARCH: arm64
+      CLANG_TRIPLE: aarch64-linux-gnu-
+      CROSS_COMPILE: aarch64-linux-gnu-
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bc bison flex libssl-dev git \
+            gcc-aarch64-linux-gnu libncurses5-dev
+
+      # --- 1. LLVM 缓存配置 ---
+      - name: Cache LLVM Toolchain
+        id: cache-llvm
+        uses: actions/cache@v4
+        with:
+          path: llvm-toolchain
+          # Key 包含 URL 的特征，如果更改 URL 或 CACHE_VERSION，缓存将失效
+          key: llvm-11.0.1-${{ env.CACHE_VERSION }}
+
+      - name: Setup LLVM 11.0.1
+        if: steps.cache-llvm.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss: Downloading LLVM..."
+          wget -q ${{ env.LLVM_URL }} -O llvm.tar.xz
+          mkdir -p llvm-toolchain
+          tar -xf llvm.tar.xz -C llvm-toolchain --strip-components=1
+
+      - name: Export LLVM Path
+        run: |
+          # 无论缓存是否命中，都需要将路径添加到 PATH
+          echo "$GITHUB_WORKSPACE/llvm-toolchain/bin" >> $GITHUB_PATH
+          # 简单验证
+          $GITHUB_WORKSPACE/llvm-toolchain/bin/clang --version
+
+      # --- 2. 内核源码缓存配置 ---
+      - name: Cache Kernel Source
+        id: cache-kernel
+        uses: actions/cache@v4
+        with:
+          path: kernel_src
+          # 使用分支名作为 Key，如果缓存命中则增量更新，否则全量克隆
+          # 添加 github.run_id 确保每次构建产生新缓存（如果内容变了），利用 restore-keys 复用旧缓存
+          key: kernel-src-${{ env.KERNEL_BRANCH }}-${{ env.CACHE_VERSION }}-${{ github.run_id }}
+          restore-keys: |
+            kernel-src-${{ env.KERNEL_BRANCH }}-${{ env.CACHE_VERSION }}-
+
+      - name: Checkout/Update Kernel Source
+        run: |
+          if [ -d "kernel_src/.git" ]; then
+            echo "Kernel Cache Hit: Updating source..."
+            cd kernel_src
+            # 强制重置并拉取最新代码，避免 git 冲突
+            git fetch --depth 1 origin ${{ env.KERNEL_BRANCH }}
+            git reset --hard FETCH_HEAD
+          else
+            echo "Kernel Cache Miss: Cloning fresh source..."
+            git clone --single-branch --depth 1 --branch ${{ env.KERNEL_BRANCH }} ${{ env.KERNEL_REPO_URL }} kernel_src
+          fi
+
+      - name: Configure Kernel using build.config
+        working-directory: kernel_src
+        run: |
+          # 即使有缓存，也可以清理构建产物以保证环境纯净，或者保留以加速（这里选择清理以防配置冲突）
+          make mrproper
+          
+          if [ -f build.config.aarch64 ]; then
+            echo "Found build.config.aarch64, sourcing..."
+            set -a
+            source build.config.aarch64
+            set +a
+            DEFCONFIG=olddefconfig
+          else
+            DEFCONFIG=defconfig
+          fi
+          
+          make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} $DEFCONFIG
+          
+          # 修正版本号
+          sed -i 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-android12-9"/' out/.config
+
+      - name: Prepare Kernel Headers
+        working-directory: kernel_src
+        run: |
+          make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} modules_prepare
+
+      - name: Build Driver
+        run: |
+          make \
+            ARCH=${{ env.ARCH }} \
+            CC=clang \
+            CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
+            CROSS_COMPILE=${{ env.CROSS_COMPILE }} \
+            KDIR=$GITHUB_WORKSPACE/kernel_src/out \
+            M=$PWD \
+            modules
+
+      - name: Strip Debug Symbols
+        run: |
+          aarch64-linux-gnu-strip --strip-unneeded *.ko
+          ls -lh *.ko
+          mkdir -p vendor/lib/firmware/aml vendor/lib/modules/aml/
+          mv aml_drv/fullmac/*.ko vendor/lib/modules/
+          # mv common/*.bin vendor/lib/firmware/aml/
+          # mv common/*.txt vendor/lib/modules/aml/
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: failure()
+        
+
+      - name: Upload compiled module
+        uses: actions/upload-artifact@v4
+        with:
+          name: amlwifi-module
+          path: |
+            vendor
