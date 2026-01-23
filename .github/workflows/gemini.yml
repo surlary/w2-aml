@@ -116,7 +116,7 @@ jobs:
             CROSS_COMPILE=${{ env.CROSS_COMPILE }} \
             KDIR=$GITHUB_WORKSPACE/kernel_src/out \
             KERNELDIR=$GITHUB_WORKSPACE/kernel_src/out \
-            M=$PWD \
+            M=$PWD/aml_drv \
             modules
 
       - name: Strip Debug Symbols
