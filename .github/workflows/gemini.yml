@@ -117,6 +117,8 @@ jobs:
             KDIR=$GITHUB_WORKSPACE/kernel_src/out \
             KERNELDIR=$GITHUB_WORKSPACE/kernel_src/out \
             M=$PWD/aml_drv \
+            KCFLAGS="-Wno-error -Wno-unknown-warning-option" \
+            -j$(nproc) \
             modules
 
       - name: Strip Debug Symbols
