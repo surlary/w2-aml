@@ -1,4 +1,4 @@
-name: Build Amlogic Android TV Driver (Cached)
+name: Build created by gemini
 
 on:
   workflow_dispatch: # 手动触发
@@ -107,7 +107,7 @@ jobs:
 
       - name: Build Driver
         run: |
-          # source defconfig
+          source defconfig
           grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
           make \
             -C aml_drv \
