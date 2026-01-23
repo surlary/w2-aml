@@ -108,6 +108,7 @@ jobs:
       - name: Build Driver
         run: |
           # source defconfig
+          grep -q "#include <linux/kmod.h>" aml_drv/aml_compat.h || sed -i '1i #include <linux/kmod.h>' aml_drv/aml_compat.h
           make \
             -C aml_drv \
             ARCH=${{ env.ARCH }} \
