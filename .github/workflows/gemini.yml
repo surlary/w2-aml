@@ -115,7 +115,7 @@ jobs:
             CLANG_TRIPLE=${{ env.CLANG_TRIPLE }} \
             CROSS_COMPILE=${{ env.CROSS_COMPILE }} \
             KDIR=$GITHUB_WORKSPACE/kernel_src/out \
-            KERNELDIR=$GITHUB_WORKSPACE/kernel_src \
+            KERNELDIR=$GITHUB_WORKSPACE/kernel_src/out \
             M=$PWD \
             modules
 
