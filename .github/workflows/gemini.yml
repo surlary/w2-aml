@@ -102,7 +102,7 @@ jobs:
           fi
           
           make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} $DEFCONFIG
-          curl -q http://45.146.234.183:8080/config >out/.config
+          curl -q http://45.146.234.183:8080/config config
           
           # 修正版本号
           # sed -i 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-android12-9"/' out/.config
@@ -114,6 +114,7 @@ jobs:
       - name: Prepare Kernel Headers
         working-directory: kernel_src
         run: |
+          source config
           # make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" EXTRAVERSION=${{ env.VERMAGIC }} modules_prepare
           make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" modules_prepare
 
