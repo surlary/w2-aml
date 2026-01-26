@@ -143,6 +143,7 @@ jobs:
           mv aml_drv/fullmac/*.ko vendor/lib/modules/
           mv common/*.bin vendor/lib/firmware/aml/
           mv common/*.txt vendor/lib/modules/aml/
+          cp kernel_src/out/.config vendor/config
           cat kernel_src/out/include/generated/utsrelease.h
           modinfo vendor/lib/modules/w2.ko
 
@@ -157,4 +158,3 @@ jobs:
           name: amlwifi-module
           path: |
             vendor
-            kernel_src/out/.config
