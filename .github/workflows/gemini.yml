@@ -116,7 +116,7 @@ jobs:
           # make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" EXTRAVERSION=${{ env.VERMAGIC }} modules_prepare
           make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" modules_prepare
 
-          echo '#define UTS_RELEASE "'${{ env.VERMAGIC }} '"' > out/include/generated/utsrelease.h
+          echo '#define UTS_RELEASE "'${{ env.VERMAGIC }}'"' > out/include/generated/utsrelease.h
 
       - name: Build Driver
         run: |
@@ -144,7 +144,7 @@ jobs:
           mv common/*.bin vendor/lib/firmware/aml/
           mv common/*.txt vendor/lib/modules/aml/
           cat kernel_src/out/include/generated/utsrelease.h
-          modinfo vendor/lib/modules/aml/*.ko
+          modinfo vendor/lib/modules/aml/w2.ko
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
