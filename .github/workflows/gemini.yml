@@ -130,8 +130,8 @@ jobs:
           mv aml_drv/fullmac/*.ko vendor/lib/modules/
           mv common/*.bin vendor/lib/firmware/aml/
           mv common/*.txt vendor/lib/modules/aml/
-          find kernel_src -name utsrelease.h
-          ls -lhrt kernel_src/
+          ls -lhrta kernel_src/
+          cat kernel_src/out/include/generated/utsrelease.h
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
@@ -144,5 +144,3 @@ jobs:
           name: amlwifi-module
           path: |
             vendor
-            kernel_src/include/generated/utsrelease.h
-            kernel_src/.config
