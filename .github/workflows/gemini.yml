@@ -6,7 +6,7 @@ on:
       vermagic:
         description: 'Kernel version magic for module compatibility'
         required: true
-        default: '5.4.210-android12-9-g092e4cd48fbd-dirty'
+        default: '5.4.210-android12-9-g6bb465b546c9-dirty'
 
 jobs:
   build:
