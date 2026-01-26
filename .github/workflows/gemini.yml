@@ -144,7 +144,7 @@ jobs:
           mv common/*.bin vendor/lib/firmware/aml/
           mv common/*.txt vendor/lib/modules/aml/
           cat kernel_src/out/include/generated/utsrelease.h
-          modinfo vendor/lib/modules/aml/w2.ko
+          modinfo vendor/lib/modules/w2.ko
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
