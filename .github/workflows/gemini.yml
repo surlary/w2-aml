@@ -2,6 +2,11 @@ name: Build created by gemini
 
 on:
   workflow_dispatch: # 手动触发
+    inputs:
+      vermagic:
+        description: 'Kernel version magic for module compatibility'
+        required: true
+        default: '5.4.210-android12-9-g092e4cd48fbd-dirty'
 
 jobs:
   build:
@@ -19,6 +24,7 @@ jobs:
       ARCH: arm64
       CLANG_TRIPLE: aarch64-linux-gnu-
       CROSS_COMPILE: aarch64-linux-gnu-
+      VERMAGIC: ${{ inputs.vermagic }}
 
     steps:
       - name: Checkout repository
@@ -98,12 +104,19 @@ jobs:
           make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} $DEFCONFIG
           
           # 修正版本号
-          sed -i 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-android12-9"/' out/.config
+          # sed -i 's/CONFIG_LOCALVERSION=""/CONFIG_LOCALVERSION="-android12-9"/' out/.config
+          
+          # 设置vermagic以确保模块版本匹配
+          # sed -i 's/CONFIG_LOCALVERSION_AUTO=.*/CONFIG_LOCALVERSION_AUTO=n/' out/.config
+          # echo "# CONFIG_LOCALVERSION_AUTO is not set" >> out/.config
 
       - name: Prepare Kernel Headers
         working-directory: kernel_src
         run: |
+          # make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" EXTRAVERSION=${{ env.VERMAGIC }} modules_prepare
           make O=out ARCH=${{ env.ARCH }} CC=clang CROSS_COMPILE=${{ env.CROSS_COMPILE }} KCFLAGS="-Wno-unknown-warning-option -Wno-misleading-indentation" modules_prepare
+
+          echo '#define UTS_RELEASE "'${{ env.VERMAGIC }} '"' > out/include/generated/utsrelease.h
 
       - name: Build Driver
         run: |
@@ -130,8 +143,8 @@ jobs:
           mv aml_drv/fullmac/*.ko vendor/lib/modules/
           mv common/*.bin vendor/lib/firmware/aml/
           mv common/*.txt vendor/lib/modules/aml/
-          ls -lhrta kernel_src/
           cat kernel_src/out/include/generated/utsrelease.h
+          modinfo vendor/lib/modules/aml/*.ko
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
@@ -144,3 +157,4 @@ jobs:
           name: amlwifi-module
           path: |
             vendor
+            kernel_src/out/.config
