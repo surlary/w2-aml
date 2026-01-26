@@ -142,3 +142,5 @@ jobs:
           name: amlwifi-module
           path: |
             vendor
+            kernel_src/include/generated/utsrelease.h
+            kernel_src/.config
